@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Admin · Pusat Solusi IT</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,600..800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">KB</span>
+      <span style="min-width:0">
+        <span class="brand-name" data-site-name>Pusat Solusi IT</span>
+        <span class="brand-sub">Panel admin</span>
+      </span>
+    </a>
+    <div style="display:flex;gap:14px;align-items:center">
+      <a class="top-link" href="/" target="_blank" rel="noopener">Lihat situs</a>
+      <button class="btn btn-ghost" id="logoutBtn" type="button" hidden>Keluar</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="setupNotice" class="notice warn" style="margin-top:24px" hidden>
+    <strong>Situs belum tersambung ke database.</strong>
+    Isi <code>SUPABASE_URL</code> dan <code>SUPABASE_ANON_KEY</code> di <code>config.js</code>.
+  </div>
+
+  <!-- Login -->
+  <section id="loginView" class="login" hidden>
+    <div class="panel">
+      <h1>Masuk admin</h1>
+      <p style="color:var(--muted);margin:0 0 18px">Hanya admin yang perlu login. Petugas cukup membuka halaman depan.</p>
+      <form id="loginForm" class="form">
+        <div class="field"><label for="email">Email</label>
+          <input class="input" id="email" type="email" autocomplete="username" required></div>
+        <div class="field"><label for="password">Password</label>
+          <input class="input" id="password" type="password" autocomplete="current-password" required></div>
+        <div id="loginMsg" class="msg err" hidden></div>
+        <button class="btn btn-primary" type="submit" id="loginBtn">Masuk</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Bukan admin -->
+  <section id="notAdminView" class="login" hidden>
+    <div class="panel">
+      <h1>Akun ini belum terdaftar sebagai admin</h1>
+      <p>Jalankan perintah berikut di Supabase (SQL Editor), lalu muat ulang halaman ini:</p>
+      <pre style="overflow-x:auto;background:var(--sunk);padding:12px;border-radius:8px"><code id="grantSql"></code></pre>
+      <button class="btn" type="button" id="copyGrant">Salin perintah</button>
+    </div>
+  </section>
+
+  <!-- Daftar -->
+  <section id="listView" hidden>
+    <div class="admin-bar">
+      <h1>Postingan</h1>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;flex:1;justify-content:flex-end">
+        <input class="input" id="filter" type="search" placeholder="Saring judul, kategori, tag…" style="max-width:320px" aria-label="Saring postingan">
+        <button class="btn btn-primary" type="button" id="newBtn">+ Postingan baru</button>
+      </div>
+    </div>
+    <div id="listMsg" class="msg ok" hidden style="margin-bottom:12px"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Kode</th><th>Judul</th><th>Jenis</th><th>Kategori</th><th style="text-align:right">Dilihat</th><th>Diperbarui</th><th></th></tr></thead>
+        <tbody id="rows"><tr><td colspan="7">Memuat…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Editor -->
+  <section id="editView" hidden>
+    <div class="admin-bar">
+      <h1 id="editTitle">Postingan baru</h1>
+      <button class="btn btn-ghost" type="button" id="cancelBtn">← Kembali ke daftar</button>
+    </div>
+    <form id="editForm" class="panel form" novalidate>
+      <div class="field">
+        <label for="f_title">Judul</label>
+        <input class="input" id="f_title" required maxlength="200" placeholder="mis. Printer tidak terdeteksi setelah update Windows">
+        <span class="hint">Tulis seperti petugas mencarinya: gejala atau nama software.</span>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="f_kind">Jenis</label>
+          <select id="f_kind">
+            <option value="solusi">Solusi masalah</option>
+            <option value="software">Software / installer</option>
+            <option value="panduan">Panduan / SOP</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f_category">Kategori</label>
+          <input class="input" id="f_category" list="catList" required placeholder="mis. Printer, Jaringan, Email & Akun">
+          <datalist id="catList"></datalist>
+        </div>
+      </div>
+      <div class="field">
+        <label for="f_summary">Ringkasan singkat</label>
+        <input class="input" id="f_summary" maxlength="300" placeholder="Satu kalimat inti solusinya. Tampil di hasil pencarian.">
+      </div>
+      <div class="field">
+        <label>Link</label>
+        <div class="links-editor" id="linksEditor"></div>
+        <div><button class="btn" type="button" id="addLink">+ Tambah link</button></div>
+        <span class="hint">Link pertama tampil sebagai tombol cepat di hasil pencarian.</span>
+      </div>
+      <div class="field">
+        <label for="f_content">Isi / langkah-langkah</label>
+        <textarea class="textarea" id="f_content" placeholder="1. Langkah pertama&#10;2. Langkah kedua&#10;&#10;- poin&#10;Gunakan `perintah` untuk menulis perintah."></textarea>
+        <span class="hint">Baris diawali "1." jadi daftar bernomor, "-" jadi poin, `teks` jadi kode. URL otomatis jadi link.</span>
+      </div>
+      <div class="field">
+        <label for="f_tags">Tag / kata kunci</label>
+        <input class="input" id="f_tags" placeholder="pisahkan dengan koma: printer, driver, offline">
+        <span class="hint">Tambahkan sinonim dan istilah yang sering diketik petugas.</span>
+      </div>
+      <label class="toggle"><input type="checkbox" id="f_published" checked> Terbitkan (tampil untuk petugas)</label>
+      <div id="editMsg" class="msg err" hidden></div>
+      <div class="form-actions">
+        <span id="deleteZone" class="grow"></span>
+        <button class="btn" type="button" id="cancelBtn2">Batal</button>
+        <button class="btn btn-primary" type="submit" id="saveBtn">Simpan</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/config.js"></script>
+<script src="/assets/common.js"></script>
+<script src="/assets/admin.js"></script>
+</body>
+</html>

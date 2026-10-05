@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pusat Solusi IT</title>
+<meta name="theme-color" content="#1f4fd8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,600..800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">KB</span>
+      <span style="min-width:0">
+        <span class="brand-name" data-site-name>Pusat Solusi IT</span>
+        <span class="brand-sub" data-site-tagline></span>
+      </span>
+    </a>
+    <a class="top-link" href="/">Cari lagi</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumb"><a href="/" id="backLink">← Kembali ke pencarian</a></nav>
+  <div id="view">
+    <div class="doc">
+      <div class="doc-main"><div class="skeleton" style="height:220px"></div></div>
+      <aside class="links-panel"><div class="skeleton" style="height:120px"></div></aside>
+    </div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span data-site-name>Pusat Solusi IT</span>
+    <a href="/admin">Masuk admin</a>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/config.js"></script>
+<script src="/assets/common.js"></script>
+<script>
+(function () {
+  const { sb, configured, KINDS, esc, safeUrl, kbCode, date, views, renderContent, copy, brand, cfg } = window.KB;
+  brand();
+  const view = document.getElementById("view");
+  const id = new URLSearchParams(location.search).get("id");
+
+  if (document.referrer && new URL(document.referrer, location.href).origin === location.origin &&
+      new URL(document.referrer).pathname === "/") {
+    document.getElementById("backLink").href = document.referrer;
+  }
+
+  function message(title, body) {
+    view.innerHTML = `<div class="empty" style="margin-top:16px"><strong>${title}</strong>${body}</div>`;
+  }
+
+  if (!configured || !sb) return message("Situs belum tersambung ke database.", "Isi config.js terlebih dahulu.");
+  if (!id) return message("Postingan tidak ditemukan.", 'Kembali ke <a href="/">halaman pencarian</a>.');
+
+  const OUT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+
+  (async () => {
+    const { data: p, error } = await sb.from("posts").select("*").eq("id", id).maybeSingle();
+    if (error) return message("Data tidak bisa dimuat.", "Periksa koneksi internet lalu muat ulang halaman.");
+    if (!p) return message("Postingan tidak ditemukan.", 'Mungkin sudah dihapus. Kembali ke <a href="/">halaman pencarian</a>.');
+
+    document.title = p.title + " · " + (cfg.SITE_NAME || "Pusat Solusi IT");
+    const k = KINDS[p.kind] || KINDS.solusi;
+    const links = (Array.isArray(p.links) ? p.links : [])
+      .map((l) => ({ label: l.label || l.url, url: safeUrl(l.url) })).filter((l) => l.url);
+
+    const linksHtml = links.length
+      ? links.map((l, i) => `<div class="link-row">
+          <a class="btn-open" href="${esc(l.url)}" target="_blank" rel="noopener"><span>${esc(l.label)}</span>${OUT}</a>
+          <div class="link-url"><code title="${esc(l.url)}">${esc(l.url)}</code>
+            <button class="btn-mini" type="button" data-copy="${i}">Salin link</button></div>
+        </div>`).join("")
+      : `<p style="margin:0;color:var(--muted)">Postingan ini tidak memiliki link.</p>`;
+
+    view.innerHTML = `<article class="doc">
+      <div class="doc-main">
+        <div class="card-meta">
+          <span class="kind kind-${esc(p.kind)}">${k.label}</span>
+          <a class="tag" href="/?kategori=${encodeURIComponent(p.category)}">${esc(p.category)}</a>
+          <span class="code">${kbCode(p.code)}</span>
+        </div>
+        <h1>${esc(p.title)}</h1>
+        ${p.summary ? `<p class="lead">${esc(p.summary)}</p>` : ""}
+        <div class="prose">${renderContent(p.content) || ""}</div>
+        ${p.tags && p.tags.length ? `<div class="tags">${p.tags.map((t) =>
+          `<a class="tag" href="/?q=${encodeURIComponent(t)}">#${esc(t)}</a>`).join("")}</div>` : ""}
+        <p class="card-meta" style="margin-top:18px">
+          <span class="views" id="viewCount">${views(p.views)} kali dilihat</span><span>·</span>
+          <span>Diperbarui ${date(p.updated_at)}</span>
+        </p>
+      </div>
+      <aside class="links-panel" aria-label="Link">
+        <h2>Link (${links.length})</h2>
+        ${linksHtml}
+        <div class="share-row">
+          <button class="btn-mini" type="button" id="copyPage">Salin link halaman ini</button>
+          <button class="btn-mini" type="button" id="copyCode">Salin ${kbCode(p.code)}</button>
+        </div>
+      </aside>
+    </article>`;
+
+    view.querySelectorAll("[data-copy]").forEach((b) =>
+      b.addEventListener("click", () => copy(links[+b.dataset.copy].url, b)));
+    document.getElementById("copyPage").addEventListener("click", (e) => copy(location.href, e.currentTarget));
+    document.getElementById("copyCode").addEventListener("click", (e) => copy(kbCode(p.code) + " — " + p.title + "\n" + location.href, e.currentTarget));
+
+    const n = await window.KB_countView(p.id);
+    if (n != null) document.getElementById("viewCount").textContent = views(n) + " kali dilihat";
+  })();
+})();
+</script>
+</body>
+</html>

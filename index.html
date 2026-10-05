@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pusat Solusi IT</title>
+<meta name="description" content="Cari link solusi masalah, software, dan panduan untuk petugas end user support.">
+<meta name="theme-color" content="#1f4fd8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,600..800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">KB</span>
+      <span style="min-width:0">
+        <span class="brand-name" data-site-name>Pusat Solusi IT</span>
+        <span class="brand-sub" data-site-tagline></span>
+      </span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="search-zone">
+    <h1>Cari solusi, software, atau panduan</h1>
+    <form class="search-box" id="searchForm" role="search" autocomplete="off">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <label for="q" class="sr" hidden>Kata kunci</label>
+      <input id="q" name="q" type="search" enterkeyhint="search" placeholder="mis. printer offline, outlook, KB-0012" aria-label="Kata kunci pencarian">
+      <span class="kbd" id="kbdHint" aria-hidden="true">/</span>
+      <button type="button" class="clear" id="clearBtn" hidden>Hapus</button>
+    </form>
+    <div class="filters" role="group" aria-label="Filter jenis">
+      <button class="chip" type="button" data-kind="" aria-pressed="true">Semua</button>
+      <button class="chip" type="button" data-kind="solusi" aria-pressed="false">Solusi</button>
+      <button class="chip" type="button" data-kind="software" aria-pressed="false">Software</button>
+      <button class="chip" type="button" data-kind="panduan" aria-pressed="false">Panduan</button>
+      <span class="spacer"></span>
+      <select class="select" id="cat" aria-label="Kategori">
+        <option value="">Semua kategori</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="setupNotice" class="notice warn" hidden>
+    <strong>Situs belum tersambung ke database.</strong>
+    Isi <code>SUPABASE_URL</code> dan <code>SUPABASE_ANON_KEY</code> di file <code>config.js</code>, lalu deploy ulang. Langkah lengkapnya ada di README.
+  </div>
+
+  <!-- Tampilan awal: populer + terbaru -->
+  <div id="home" class="columns">
+    <section aria-labelledby="hPop">
+      <div class="section-head"><h2 id="hPop">Paling sering dilihat</h2></div>
+      <ol class="list" id="popular"><li class="skeleton"></li><li class="skeleton"></li><li class="skeleton"></li></ol>
+    </section>
+    <section aria-labelledby="hNew">
+      <div class="section-head"><h2 id="hNew">Terbaru</h2></div>
+      <ol class="list" id="latest"><li class="skeleton"></li><li class="skeleton"></li><li class="skeleton"></li></ol>
+    </section>
+  </div>
+
+  <!-- Hasil pencarian -->
+  <section id="results" hidden aria-live="polite">
+    <div class="section-head">
+      <h2 id="resTitle">Hasil</h2>
+      <div class="filters" style="margin:0" role="group" aria-label="Urutkan">
+        <button class="chip" type="button" data-sort="relevan" aria-pressed="true">Relevan</button>
+        <button class="chip" type="button" data-sort="populer" aria-pressed="false">Populer</button>
+        <button class="chip" type="button" data-sort="terbaru" aria-pressed="false">Terbaru</button>
+      </div>
+    </div>
+    <ol class="list" id="resList"></ol>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span><span data-site-name>Pusat Solusi IT</span> · tidak perlu login untuk membaca</span>
+    <a href="/admin">Masuk admin</a>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/config.js"></script>
+<script src="/assets/common.js"></script>
+<script src="/assets/public.js"></script>
+</body>
+</html>

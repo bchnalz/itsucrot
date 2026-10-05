@@ -1,0 +1,114 @@
+name: Database & Deploy
+
+# Memakai GitHub repository secrets:
+#   SUPABASE_URL            https://<ref>.supabase.co
+#   SUPABASE_ANON_KEY       anon / publishable key (boleh publik)
+#   SUPABASE_ACCESS_TOKEN   personal access token Supabase (untuk memasang skema)
+# Opsional, untuk deploy dari GitHub Actions (tidak perlu jika repo sudah tersambung ke Vercel):
+#   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      admin_email:
+        description: "Email akun admin (sudah dibuat di Supabase > Authentication) yang dijadikan admin"
+        required: false
+        default: ""
+      seed_examples:
+        description: "Isi 6 postingan contoh (hanya jika tabel masih kosong)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  database:
+    name: Pasang skema Supabase
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cek secrets
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "::error::Secret SUPABASE_URL atau SUPABASE_ACCESS_TOKEN belum ada (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+          REF=$(echo "$SUPABASE_URL" | sed -E 's#https?://([^.]+)\..*#\1#')
+          echo "PROJECT_REF=$REF" >> "$GITHUB_ENV"
+          echo "Project: $REF"
+
+      - name: Fungsi bantu SQL
+        run: |
+          cat > /tmp/run_sql.sh <<'EOF'
+          #!/usr/bin/env bash
+          # Pakai: run_sql.sh <file.sql>   atau   echo "sql" | run_sql.sh -
+          set -euo pipefail
+          SQL=$( [ "$1" = "-" ] && cat || cat "$1" )
+          BODY=$(jq -n --arg q "$SQL" '{query: $q}')
+          RES=$(curl -sS -w '\n%{http_code}' -X POST \
+            "https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query" \
+            -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data "$BODY")
+          CODE=$(echo "$RES" | tail -n1); OUT=$(echo "$RES" | sed '$d')
+          echo "$OUT" | head -c 2000; echo
+          if [ "$CODE" -ge 300 ]; then echo "::error::Supabase API HTTP $CODE"; exit 1; fi
+          EOF
+          chmod +x /tmp/run_sql.sh
+
+      - name: Terapkan supabase/schema.sql
+        run: /tmp/run_sql.sh supabase/schema.sql
+
+      - name: Data contoh (opsional)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.seed_examples }}
+        run: |
+          COUNT=$(echo "select count(*)::int as n from public.posts;" | /tmp/run_sql.sh - | jq -r '.[0].n // 0' 2>/dev/null || echo 0)
+          if [ "$COUNT" = "0" ]; then /tmp/run_sql.sh supabase/contoh-data.sql; else echo "Tabel sudah berisi $COUNT postingan, data contoh dilewati."; fi
+
+      - name: Jadikan admin (opsional)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.admin_email != '' }}
+        env:
+          ADMIN_EMAIL: ${{ inputs.admin_email }}
+        run: |
+          EMAIL=$(printf "%s" "$ADMIN_EMAIL" | tr -d "'\\\\" )
+          echo "insert into public.admins (user_id) select id from auth.users where lower(email) = lower('${EMAIL}') on conflict do nothing; select count(*)::int as admin_ditemukan from auth.users where lower(email) = lower('${EMAIL}');" | /tmp/run_sql.sh -
+
+  deploy:
+    name: Deploy ke Vercel
+    needs: database
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || secrets.SUPABASE_KEY || secrets.SUPABASE_PUBLISHABLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build
+        run: node scripts/build.mjs
+
+      - name: Deploy (hanya jika VERCEL_TOKEN tersedia)
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID belum ada."
+            echo "Lewati: deploy dilakukan oleh integrasi Git Vercel (atur env SUPABASE_URL & SUPABASE_ANON_KEY di Vercel)."
+            exit 0
+          fi
+          cp vercel.json dist/vercel.json
+          # Hasil build sudah lengkap; minta Vercel menyajikan dist/ apa adanya.
+          node -e "const f='dist/vercel.json',j=require('./'+f);j.buildCommand='';j.installCommand='';j.outputDirectory='.';require('fs').writeFileSync(f,JSON.stringify(j,null,2))"
+          cd dist
+          npx --yes vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN"
