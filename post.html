@@ -4,17 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pusat Solusi IT</title>
-<meta name="theme-color" content="#1f4fd8">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,600..800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<meta name="theme-color" content="#f6f8fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#010409" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="/assets/app.css">
 </head>
 <body>
 <header class="top">
   <div class="wrap">
     <a class="brand" href="/">
-      <span class="brand-mark" aria-hidden="true">KB</span>
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M0 1.75A.75.75 0 0 1 .75 1h4.25c1.2 0 2.27.56 2.95 1.44A3.74 3.74 0 0 1 10.9 1h4.35a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.6a2.25 2.25 0 0 0-2.04 1.3.75.75 0 0 1-1.22 0A2.25 2.25 0 0 0 5.35 13H.75a.75.75 0 0 1-.75-.75Zm7.25 2.5A2.25 2.25 0 0 0 5 2.5H1.5v9h3.85c.7 0 1.36.17 1.9.48Zm1.5 7.73A3.73 3.73 0 0 1 10.65 11.5h3.85v-9h-3.6a2.15 2.15 0 0 0-2.15 2.15Z"/></svg></span>
       <span style="min-width:0">
         <span class="brand-name" data-site-name>Pusat Solusi IT</span>
         <span class="brand-sub" data-site-tagline></span>
@@ -63,7 +61,7 @@
   if (!configured || !sb) return message("Situs belum tersambung ke database.", "Isi config.js terlebih dahulu.");
   if (!id) return message("Postingan tidak ditemukan.", 'Kembali ke <a href="/">halaman pencarian</a>.');
 
-  const OUT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+  const OUT = '<svg class="oct" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .14.11.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.78 2.78 2 3.75 2Zm6.85-.13 3.53.01c.2 0 .37.16.37.37v3.53a.25.25 0 0 1-.43.17L12.81 4.7 8.78 8.72a.75.75 0 0 1-1.06-1.06l4.03-4.03-1.25-1.25a.25.25 0 0 1 .1-.51Z"/></svg>';
 
   (async () => {
     const { data: p, error } = await sb.from("posts").select("*").eq("id", id).maybeSingle();
