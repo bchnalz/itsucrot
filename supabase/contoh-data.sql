@@ -51,3 +51,12 @@ insert into public.posts (title, kind, category, tags, summary, content, links, 
   '[]',
   8
 );
+
+-- Contoh kolom "Perintah / kode siap salin"
+update public.posts
+   set snippets = '[{"label":"Reset jaringan (CMD sebagai administrator)","code":"ipconfig /release\nipconfig /renew\nipconfig /flushdns\nnetsh winsock reset"},{"label":"Tes koneksi ke internet","code":"ping 8.8.8.8 -n 4"}]'
+ where title = 'Wi-Fi tersambung tapi tidak ada internet' and snippets = '[]'::jsonb;
+
+update public.posts
+   set snippets = '[{"label":"Instal diam-diam (CMD sebagai administrator)","code":"msiexec /i GoogleChromeStandaloneEnterprise64.msi /qn"}]'
+ where title like 'Installer Google Chrome offline%' and snippets = '[]'::jsonb;

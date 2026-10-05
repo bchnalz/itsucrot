@@ -59,7 +59,8 @@ Halaman admin: `https://alamat-anda/admin`
 - **Ringkasan** = satu kalimat inti solusi, tampil di hasil pencarian.
 - **Tag** = sinonim dan istilah lain: `outlook, password, credential, minta login`.
 - **Link pertama** tampil sebagai tombol cepat di hasil pencarian, jadi taruh link terpenting di urutan pertama.
-- Isi mendukung format sederhana: baris `1.` jadi daftar bernomor, `-` jadi poin, `` `perintah` `` jadi kode, URL otomatis jadi link.
+- Perintah CMD/PowerShell, path, atau IP taruh di kolom **Perintah / kode siap salin**: petugas cukup mengetuk tombol Salin.
+- Isi mendukung format sederhana: baris `1.` jadi daftar bernomor, `-` jadi poin, `` `perintah` `` jadi kode yang bisa diketuk untuk disalin, teks di antara baris ``` jadi kotak kode dengan tombol Salin, URL otomatis jadi link.
 - Hapus centang **Terbitkan** untuk menyimpan sebagai draf.
 
 ## Struktur file

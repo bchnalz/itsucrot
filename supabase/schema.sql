@@ -42,6 +42,9 @@ create table if not exists public.posts (
 );
 
 create index if not exists posts_views_idx   on public.posts (views desc);
+
+-- Perintah / kode siap salin: [{ "label": "...", "code": "..." }]
+alter table public.posts add column if not exists snippets jsonb not null default '[]'::jsonb;
 create index if not exists posts_created_idx on public.posts (created_at desc);
 
 create or replace function public.touch_updated_at()
@@ -119,7 +122,7 @@ as $$
            lower(array_to_string(p.tags, ' ') || ' ' || p.category) as l_tags,
            lower(p.title || ' ' || coalesce(p.summary, '') || ' ' ||
                  array_to_string(p.tags, ' ') || ' ' || p.category || ' ' ||
-                 coalesce(p.content, '') || ' ' || p.links::text ||
+                 coalesce(p.content, '') || ' ' || p.links::text || ' ' || p.snippets::text ||
                  ' kb-' || lpad(p.code::text, 4, '0')) as l_all
     from public.posts p
     where (p_kind is null or p.kind = p_kind)

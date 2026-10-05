@@ -296,3 +296,66 @@ td.actions { white-space: nowrap; text-align: right; }
 .confirm-row { display: inline-flex; gap: 6px; align-items: center; }
 .form-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; align-items: center; }
 .form-actions .grow { flex: 1; }
+
+/* ---------- Kode siap salin ---------- */
+.codebox {
+  margin: 0 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--sunk);
+  overflow: hidden;
+  min-width: 0;
+}
+.codebox figcaption {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 6px 6px 6px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.codebox-label { font: 700 12px var(--f-mono); letter-spacing: 0.04em; color: var(--muted); text-transform: uppercase; overflow-wrap: anywhere; }
+.codebox pre { margin: 0; padding: 12px 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.codebox pre code {
+  background: transparent; padding: 0; border-radius: 0;
+  font: 14px/1.6 var(--f-mono); white-space: pre; overflow-wrap: normal; color: var(--ink);
+}
+.copy-btn {
+  flex: none; min-height: 36px; min-width: 76px;
+  border: 0; border-radius: 7px; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink);
+  font: 700 14px var(--f-body); padding: 6px 14px;
+}
+.copy-btn:hover { filter: brightness(1.08); }
+.copy-btn.is-done { background: var(--ok); color: var(--surface); }
+
+code.tap-copy {
+  cursor: copy;
+  border-bottom: 1px dashed color-mix(in srgb, var(--accent) 60%, transparent);
+  transition: background-color .15s;
+}
+code.tap-copy:hover { background: var(--accent-soft); }
+code.tap-copy.is-done { background: color-mix(in srgb, var(--ok) 22%, transparent); }
+
+.snippets-head { font: 700 13px var(--f-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 22px 0 10px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+  transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+  background: var(--ink); color: var(--bg);
+  font: 700 14px var(--f-body); padding: 10px 16px; border-radius: 999px;
+  max-width: calc(100vw - 32px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: opacity .18s, transform .18s; z-index: 50;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { .toast, code.tap-copy { transition: none; } }
+
+/* Editor kode di admin */
+.snippet-edit { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.snippet-edit .head { display: flex; gap: 8px; align-items: center; }
+.snippet-edit .head .input { flex: 1; min-width: 0; }
+.snippet-edit textarea {
+  width: 100%; resize: vertical;
+  font: 14px/1.5 var(--f-mono); color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; white-space: pre; overflow-x: auto;
+}
+.snippet-edit textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+.snippets-editor { display: grid; gap: 10px; }

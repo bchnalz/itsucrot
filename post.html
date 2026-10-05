@@ -46,7 +46,7 @@
 <script src="/assets/common.js"></script>
 <script>
 (function () {
-  const { sb, configured, KINDS, esc, safeUrl, kbCode, date, views, renderContent, copy, brand, cfg } = window.KB;
+  const { sb, configured, KINDS, esc, safeUrl, kbCode, date, views, renderContent, codeBlock, copy, brand, cfg } = window.KB;
   brand();
   const view = document.getElementById("view");
   const id = new URLSearchParams(location.search).get("id");
@@ -75,6 +75,12 @@
     const links = (Array.isArray(p.links) ? p.links : [])
       .map((l) => ({ label: l.label || l.url, url: safeUrl(l.url) })).filter((l) => l.url);
 
+    const snippets = (Array.isArray(p.snippets) ? p.snippets : []).filter((s) => s && s.code);
+    const snippetsHtml = snippets.length
+      ? `<h2 class="snippets-head">Perintah siap salin (${snippets.length})</h2>` +
+        snippets.map((s) => codeBlock(s.code, s.label)).join("")
+      : "";
+
     const linksHtml = links.length
       ? links.map((l, i) => `<div class="link-row">
           <a class="btn-open" href="${esc(l.url)}" target="_blank" rel="noopener"><span>${esc(l.label)}</span>${OUT}</a>
@@ -92,6 +98,7 @@
         </div>
         <h1>${esc(p.title)}</h1>
         ${p.summary ? `<p class="lead">${esc(p.summary)}</p>` : ""}
+        ${snippetsHtml}
         <div class="prose">${renderContent(p.content) || ""}</div>
         ${p.tags && p.tags.length ? `<div class="tags">${p.tags.map((t) =>
           `<a class="tag" href="/?q=${encodeURIComponent(t)}">#${esc(t)}</a>`).join("")}</div>` : ""}

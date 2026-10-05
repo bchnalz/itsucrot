@@ -50,28 +50,51 @@
 
   /* Format isi sederhana:
      - baris "1. ..." jadi daftar bernomor, "- ..." jadi daftar poin
-     - `kode` jadi teks kode
+     - `kode` jadi teks kode yang bisa diketuk untuk disalin
+     - blok di antara baris ``` jadi kotak kode dengan tombol Salin
      - URL otomatis jadi link
      - baris kosong memisahkan paragraf */
   function inline(text) {
-    let out = esc(text);
-    out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
-    out = out.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, (m, pre, url) => {
-      const clean = url.replace(/[.,;:]+$/, "");
-      const tail = url.slice(clean.length);
-      return `${pre}<a href="${clean}" target="_blank" rel="noopener">${clean}</a>${tail}`;
-    });
-    return out;
+    // Pisahkan bagian kode dulu supaya URL di dalam kode tidak diubah jadi link
+    return String(text).split(/(`[^`]+`)/g).map((part) => {
+      if (/^`[^`]+`$/.test(part)) {
+        return `<code class="tap-copy" role="button" tabindex="0" title="Ketuk untuk menyalin">${esc(part.slice(1, -1))}</code>`;
+      }
+      return esc(part).replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, (m, pre, url) => {
+        const clean = url.replace(/[.,;:]+$/, "");
+        const tail = url.slice(clean.length);
+        return `${pre}<a href="${clean}" target="_blank" rel="noopener">${clean}</a>${tail}`;
+      });
+    }).join("");
+  }
+
+  /* Kotak kode dengan tombol Salin. Dipakai untuk blok ``` di isi dan kolom "Perintah / kode". */
+  function codeBlock(code, label) {
+    const c = String(code ?? "").replace(/\r/g, "").replace(/^\n+|\s+$/g, "");
+    return `<figure class="codebox">
+      <figcaption>
+        <span class="codebox-label">${label ? esc(label) : "Kode"}</span>
+        <button class="copy-btn" type="button" data-copy-code>Salin</button>
+      </figcaption>
+      <pre><code>${esc(c)}</code></pre>
+    </figure>`;
   }
 
   function renderContent(src) {
     const lines = String(src || "").replace(/\r/g, "").split("\n");
     const html = [];
-    let list = null, para = [];
+    let list = null, para = [], fence = null;
     const flushPara = () => { if (para.length) { html.push("<p>" + para.map(inline).join("<br>") + "</p>"); para = []; } };
     const flushList = () => { if (list) { html.push(`<${list.type}>` + list.items.map((i) => "<li>" + inline(i) + "</li>").join("") + `</${list.type}>`); list = null; } };
     for (const raw of lines) {
       const line = raw.trimEnd();
+      const fenceMatch = line.match(/^\s*```\s*(.*)$/);
+      if (fence) {
+        if (fenceMatch && !fenceMatch[1]) { html.push(codeBlock(fence.lines.join("\n"), fence.label)); fence = null; }
+        else fence.lines.push(raw);
+        continue;
+      }
+      if (fenceMatch) { flushPara(); flushList(); fence = { label: fenceMatch[1].trim(), lines: [] }; continue; }
       const ol = line.match(/^\s*\d+[.)]\s+(.*)$/);
       const ul = line.match(/^\s*[-*•]\s+(.*)$/);
       if (ol || ul) {
@@ -85,6 +108,7 @@
         flushList(); para.push(line);
       }
     }
+    if (fence) html.push(codeBlock(fence.lines.join("\n"), fence.label)); // ``` lupa ditutup
     flushPara(); flushList();
     return html.join("");
   }
@@ -125,10 +149,36 @@
   }
   window.KB_countView = countView;
 
+  // Salin dengan sekali ketuk: tombol "Salin" di kotak kode dan teks `kode` di dalam isi
+  function toast(text) {
+    let t = document.getElementById("kbToast");
+    if (!t) { t = document.createElement("div"); t.id = "kbToast"; t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+    t.textContent = text; t.classList.add("show");
+    clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 1600);
+  }
+  async function handleCopy(e) {
+    const btn = e.target.closest("[data-copy-code]");
+    if (btn) {
+      const code = btn.closest(".codebox").querySelector("pre code").textContent;
+      if (await copy(code, btn)) toast("Kode tersalin");
+      return;
+    }
+    const tap = e.target.closest("code.tap-copy");
+    if (tap && (e.type === "click" || e.key === "Enter" || e.key === " ")) {
+      if (e.type === "keydown") e.preventDefault();
+      if (await copy(tap.textContent)) {
+        tap.classList.add("is-done"); setTimeout(() => tap.classList.remove("is-done"), 1200);
+        toast("Tersalin: " + (tap.textContent.length > 40 ? tap.textContent.slice(0, 40) + "…" : tap.textContent));
+      }
+    }
+  }
+  document.addEventListener("click", handleCopy);
+  document.addEventListener("keydown", (e) => { if (e.target.matches && e.target.matches("code.tap-copy")) handleCopy(e); });
+
   function brand() {
     document.querySelectorAll("[data-site-name]").forEach((el) => (el.textContent = cfg.SITE_NAME || "Pusat Solusi IT"));
     document.querySelectorAll("[data-site-tagline]").forEach((el) => (el.textContent = cfg.SITE_TAGLINE || ""));
   }
 
-  window.KB = { sb, cfg, configured, KINDS, esc, safeUrl, kbCode, date, ago, views, renderContent, copy, lsGet, lsSet, brand };
+  window.KB = { sb, cfg, configured, KINDS, esc, safeUrl, kbCode, date, ago, views, renderContent, codeBlock, copy, lsGet, lsSet, brand };
 })();

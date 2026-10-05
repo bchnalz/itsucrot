@@ -115,9 +115,15 @@
         <span class="hint">Link pertama tampil sebagai tombol cepat di hasil pencarian.</span>
       </div>
       <div class="field">
+        <label>Perintah / kode siap salin</label>
+        <div class="snippets-editor" id="snippetsEditor"></div>
+        <div><button class="btn" type="button" id="addSnippet">+ Tambah kode</button></div>
+        <span class="hint">Untuk perintah CMD/PowerShell, path, IP, atau teks yang sering disalin. Petugas cukup mengetuk tombol <b>Salin</b>. Boleh lebih dari satu baris.</span>
+      </div>
+      <div class="field">
         <label for="f_content">Isi / langkah-langkah</label>
         <textarea class="textarea" id="f_content" placeholder="1. Langkah pertama&#10;2. Langkah kedua&#10;&#10;- poin&#10;Gunakan `perintah` untuk menulis perintah."></textarea>
-        <span class="hint">Baris diawali "1." jadi daftar bernomor, "-" jadi poin, `teks` jadi kode. URL otomatis jadi link.</span>
+        <span class="hint">Baris diawali "1." jadi daftar bernomor, "-" jadi poin, `teks` jadi kode yang bisa diketuk untuk disalin, dan teks di antara baris ``` jadi kotak kode dengan tombol Salin. URL otomatis jadi link.</span>
       </div>
       <div class="field">
         <label for="f_tags">Tag / kata kunci</label>

@@ -51,7 +51,7 @@
   /* ---------- Daftar ---------- */
   async function loadList() {
     const { data, error } = await sb.from("posts")
-      .select("id, code, title, kind, category, tags, summary, content, links, views, published, created_at, updated_at")
+      .select("id, code, title, kind, category, tags, summary, content, links, snippets, views, published, created_at, updated_at")
       .order("created_at", { ascending: false });
     if (error) {
       $("#rows").innerHTML = `<tr><td colspan="7">Gagal memuat: ${esc(error.message)}</td></tr>`;
@@ -104,6 +104,22 @@
     return row;
   }
 
+  function snippetRow(sn = { label: "", code: "" }) {
+    const row = document.createElement("div");
+    row.className = "snippet-edit";
+    row.innerHTML = `
+      <div class="head">
+        <input class="input input-slabel" placeholder="Nama, mis. Reset jaringan (CMD sebagai admin)" value="${esc(sn.label)}" aria-label="Nama kode">
+        <button class="btn btn-ghost" type="button" aria-label="Hapus kode">✕</button>
+      </div>
+      <textarea class="input-scode" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="ipconfig /flushdns" aria-label="Isi kode">${esc(sn.code)}</textarea>`;
+    row.querySelector("button").addEventListener("click", () => row.remove());
+    const ta = row.querySelector("textarea");
+    const fit = () => { ta.rows = Math.min(16, Math.max(3, ta.value.split("\n").length + 1)); };
+    ta.addEventListener("input", fit); fit();
+    return row;
+  }
+
   function openEditor(p) {
     editing = p;
     $("#editTitle").textContent = p ? `Edit ${kbCode(p.code)}` : "Postingan baru";
@@ -117,6 +133,8 @@
     const le = $("#linksEditor"); le.innerHTML = "";
     const links = p?.links?.length ? p.links : [{ label: "", url: "" }];
     links.forEach((l) => le.appendChild(linkRow(l)));
+    const se = $("#snippetsEditor"); se.innerHTML = "";
+    (p?.snippets || []).forEach((sn) => se.appendChild(snippetRow(sn)));
     $("#editMsg").hidden = true;
     renderDelete(false);
     show("edit");
@@ -144,6 +162,9 @@
     show("list"); loadList();
   }
 
+  $("#addSnippet").addEventListener("click", () => {
+    const r = snippetRow(); $("#snippetsEditor").appendChild(r); r.querySelector("textarea").focus();
+  });
   $("#addLink").addEventListener("click", () => {
     const r = linkRow(); $("#linksEditor").appendChild(r); r.querySelector("input").focus();
   });
@@ -170,6 +191,14 @@
       links.push({ label: label || url, url });
     }
 
+    const snippets = [];
+    for (const row of $("#snippetsEditor").querySelectorAll(".snippet-edit")) {
+      const label = row.querySelector(".input-slabel").value.trim();
+      const code = row.querySelector(".input-scode").value.replace(/\r/g, "").replace(/^\n+|\s+$/g, "");
+      if (!code) { if (label) return showErr(`Kode "${label}" masih kosong. Isi kodenya atau hapus barisnya.`); continue; }
+      snippets.push({ label, code });
+    }
+
     const payload = {
       title, category,
       kind: $("#f_kind").value,
@@ -177,6 +206,7 @@
       content: $("#f_content").value.trim() || null,
       tags: [...new Set($("#f_tags").value.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean))],
       links,
+      snippets,
       published: $("#f_published").checked,
     };
 
