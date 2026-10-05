@@ -1,7 +1,7 @@
 // Menyalin situs ke folder dist/ dan menulis dist/config.js dari environment variable.
 // Dipakai oleh Vercel (Build Command) dan GitHub Actions.
 // Hanya URL dan ANON key yang masuk ke browser. Jangan pernah memakai service_role / secret key di sini.
-import { cpSync, mkdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 
 const env = process.env;
 const pick = (...names) => names.map((n) => env[n]).find((v) => v && v.trim())?.trim() || "";
@@ -21,7 +21,15 @@ if (anon.startsWith("sb_secret_") || jwtRole(anon) === "service_role") {
 
 rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist");
-for (const f of ["index.html", "post.html", "admin.html", "assets"]) cpSync(f, `dist/${f}`, { recursive: true });
+// post.html sengaja TIDAK disalin: halaman /post disajikan oleh api/post.js
+// (menyisipkan judul untuk pratinjau WhatsApp). Kalau disalin, file statis akan menang.
+for (const f of ["index.html", "admin.html", "assets", "favicon.svg", "apple-touch-icon.png", "og-image.png"]) {
+  cpSync(f, `dist/${f}`, { recursive: true });
+}
+const siteUrl = (pick("SITE_URL") || (env.VERCEL_PROJECT_PRODUCTION_URL ? "https://" + env.VERCEL_PROJECT_PRODUCTION_URL : "")).replace(/\/+$/, "");
+for (const f of ["index.html", "admin.html"]) {
+  writeFileSync(`dist/${f}`, readFileSync(`dist/${f}`, "utf8").split("%SITE_URL%").join(siteUrl));
+}
 
 if (url && anon) {
   writeFileSync("dist/config.js",

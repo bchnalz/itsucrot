@@ -1,4 +1,5 @@
-/* Tampilan bergaya GitHub (Primer): font sistem, ukuran dasar 14px, kotak bergaris tipis,
+/* Tema terang adalah bawaan; tema gelap hanya aktif lewat tombol di header (data-theme="dark").
+   Tampilan bergaya GitHub (Primer): font sistem, ukuran dasar 14px, kotak bergaris tipis,
    daftar berbaris seperti daftar issue/repo, label pil, tombol 32px, mode gelap GitHub. */
 :root {
   --bg: #ffffff;
@@ -36,20 +37,6 @@
   --r: 6px;
   --wrap: 1280px;
   color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0d1117; --subtle: #151b23; --inset: #010409; --hover: #151b23;
-    --fg: #f0f6fc; --muted: #9198a1; --border: #3d444d; --border-muted: #3d444db3;
-    --accent: #4493f8; --accent-subtle: #388bfd1a; --accent-ink: #ffffff;
-    --success: #238636; --success-hover: #29903b; --success-fg: #3fb950; --success-subtle: #2ea04326;
-    --done: #ab7df8; --done-subtle: #ab7df826; --attention: #d29922; --attention-subtle: #bb800926;
-    --danger: #f85149; --danger-subtle: #f851491a;
-    --btn-bg: #212830; --btn-hover: #262c36; --btn-border: #3d444d;
-    --mark: #bb800966; --neutral-muted: #656c7633; --header: #010409;
-    --shadow: 0 0 transparent; --overlay-shadow: 0 0 0 1px #3d444d, 0 8px 24px #010409;
-    color-scheme: dark;
-  }
 }
 :root[data-theme="dark"] {
   --bg: #0d1117; --subtle: #151b23; --inset: #010409; --hover: #151b23;
@@ -431,4 +418,39 @@ code.tap-copy.is-done { background: var(--success-subtle); color: var(--success-
 @media (hover: none), (max-width: 544px) {
   .search-box .kbd { display: none; }
   .search-box input { padding-right: 64px; }
+}
+
+/* ---------- Header: logo, LINK ATLAS, tombol tema ---------- */
+.brand-logo { flex: none; width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border); background: #ffffff; object-fit: contain; }
+.top-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+.btn-atlas {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap;
+  color: #ffffff; background: var(--success); border: 1px solid #1f232826; border-radius: var(--r);
+  box-shadow: 0 1px 0 #1f23281a;
+}
+.btn-atlas:hover { background: var(--success-hover); text-decoration: none; }
+.theme-toggle {
+  display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0; cursor: pointer;
+  color: var(--muted); background: var(--btn-bg); border: 1px solid var(--btn-border); border-radius: var(--r);
+}
+.theme-toggle:hover { background: var(--btn-hover); color: var(--fg); }
+.theme-toggle .icon-sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+@media (max-width: 640px) {
+  .hide-sm { display: none !important; }
+  .brand-sub { display: none; }
+  .top .wrap { gap: 8px; }
+  .brand-name { font-size: 13px; }
+  .brand-logo { width: 36px; height: 36px; }
+}
+@media (max-width: 380px) { .btn-atlas svg { display: none; } .btn-atlas { padding: 0 10px; } }
+
+/* ---------- Footer & watermark ---------- */
+.foot .wrap { display: block; }
+.foot-row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.watermark {
+  margin: 16px 0 0; padding-top: 12px; border-top: 1px dashed var(--border);
+  text-align: center; font-size: 12px; color: var(--muted); letter-spacing: 0.01em;
 }

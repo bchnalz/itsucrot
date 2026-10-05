@@ -115,6 +115,7 @@ jobs:
             exit 0
           fi
           cp vercel.json dist/vercel.json
+          cp -r api post.html dist/   # fungsi pratinjau WhatsApp untuk /post
           # Hasil build sudah lengkap; minta Vercel menyajikan dist/ apa adanya.
           node -e "const f='dist/vercel.json',j=require('./'+f);j.buildCommand='';j.installCommand='';j.outputDirectory='.';require('fs').writeFileSync(f,JSON.stringify(j,null,2))"
           cd dist

@@ -10,6 +10,8 @@ Website knowledge base untuk petugas End User Support. Petugas membuka situs **t
 - Tombol link cepat langsung di hasil pencarian, tombol **Salin link** untuk dikirim ke user lewat WhatsApp.
 - Setiap postingan punya nomor `KB-xxxx` yang mudah disebut antar petugas.
 - Ramah ponsel, mode gelap otomatis, data halaman depan tersimpan di perangkat sehingga tetap tampil saat sinyal lemah.
+- Link postingan yang dibagikan ke WhatsApp menampilkan judul, ringkasan, dan gambar (lewat `api/post.js`).
+- Tema terang bawaan; tombol bulan di header untuk tema gelap.
 - Tayangan dihitung satu kali per perangkat setiap 6 jam, jadi peringkat tidak naik karena halaman dimuat ulang.
 
 **Teknologi**: HTML + JavaScript biasa (tanpa build), di-hosting di **Vercel**, data dan login admin di **Supabase** (paket gratis cukup).
@@ -77,7 +79,9 @@ assets/public.js    logika halaman depan
 assets/admin.js     logika panel admin
 supabase/schema.sql tabel, aturan keamanan, fungsi pencarian & tayangan
 supabase/contoh-data.sql  data contoh (opsional)
-vercel.json         pengaturan Vercel (URL tanpa .html, header keamanan)
+vercel.json         pengaturan Vercel (URL tanpa .html, header keamanan, /post → api/post)
+api/post.js         menyisipkan judul postingan ke HTML untuk pratinjau WhatsApp
+favicon.svg, assets/logo.svg, og-image.png, apple-touch-icon.png  logo & ikon
 ```
 
 ## Uji di komputer sendiri

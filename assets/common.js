@@ -175,7 +175,23 @@
   document.addEventListener("click", handleCopy);
   document.addEventListener("keydown", (e) => { if (e.target.matches && e.target.matches("code.tap-copy")) handleCopy(e); });
 
+  // Tombol tema: terang bawaan, gelap jika dipilih (diingat di perangkat ini)
+  function syncThemeButtons() {
+    const dark = document.documentElement.getAttribute("data-theme") === "dark";
+    document.querySelectorAll("[data-theme-toggle]").forEach((b) =>
+      b.setAttribute("aria-label", dark ? "Ganti ke tema terang" : "Ganti ke tema gelap"));
+  }
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest || !e.target.closest("[data-theme-toggle]")) return;
+    const dark = document.documentElement.getAttribute("data-theme") !== "dark";
+    if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    else document.documentElement.removeAttribute("data-theme");
+    try { localStorage.setItem("kb:theme", dark ? "dark" : "light"); } catch { /* abaikan */ }
+    syncThemeButtons();
+  });
+
   function brand() {
+    syncThemeButtons();
     document.querySelectorAll("[data-site-name]").forEach((el) => (el.textContent = cfg.SITE_NAME || "Pusat Solusi IT"));
     document.querySelectorAll("[data-site-tagline]").forEach((el) => (el.textContent = cfg.SITE_TAGLINE || ""));
   }
